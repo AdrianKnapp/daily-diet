@@ -8,5 +8,18 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^4.17.0",
+    "knex": "^2.4.2",
+    "tsup": "^6.7.0",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/eslint": "^8.37.0",
+    "@types/node": "^20.2.3",
+    "sqlite3": "^5.1.6",
+    "tsx": "^3.12.7",
+    "typescript": "^5.0.4"
+  }
 }
