@@ -6,7 +6,7 @@ const mealsRoutes = async (app, options, done) => {
   app.get('/', async (request, reply) => {
     const meals = await knex.table('meals').select('*')
 
-    reply.send({ meals })
+    reply.send(responseWrapper({ data: { meals } }))
   })
 
   app.post('/', async (request, reply) => {
@@ -19,6 +19,7 @@ const mealsRoutes = async (app, options, done) => {
       date,
       is_in_the_diet: isInTheDiet,
       user_id: userId,
+      created_at: new Date().toISOString(),
     }
 
     // TODO: drop tables and redo database schema
@@ -27,7 +28,9 @@ const mealsRoutes = async (app, options, done) => {
     // TODO: return the created meal
     reply.status(201).send(
       responseWrapper({
-        data: meal,
+        data: {
+          meal,
+        },
       }),
     )
   })
