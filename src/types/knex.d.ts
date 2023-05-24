@@ -3,7 +3,7 @@ import { Knex } from 'knex'
 
 declare module 'knex/types/tables' {
   interface User {
-    id: number
+    id: string
     email: string
     password: string
     name: string
@@ -11,7 +11,7 @@ declare module 'knex/types/tables' {
   }
 
   interface Meal {
-    id: number
+    id: string
     name: string
     description: string
     date: string
