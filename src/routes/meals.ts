@@ -1,39 +1,59 @@
 import { randomUUID } from 'node:crypto'
 import { knex } from '../database'
 import responseWrapper from '../utils/responseWrapper'
+import checkUserIdExists from '../middlewares/check-userid-exists'
 
 const mealsRoutes = async (app, options, done) => {
-  app.get('/', async (request, reply) => {
-    const meals = await knex.table('meals').select('*')
+  app.get(
+    '/',
+    {
+      preHandler: [checkUserIdExists],
+    },
+    async (request, reply) => {
+      const { uid } = request.cookies
 
-    reply.send(responseWrapper({ data: { meals } }))
-  })
+      const meals = await knex
+        .table('meals')
+        .where({ user_id: uid })
+        .select('*')
 
-  app.post('/', async (request, reply) => {
-    const { name, description, date, isInTheDiet, userId } = request.body
+      reply.send(responseWrapper({ data: { meals } }))
+    },
+  )
 
-    const meal = {
-      id: randomUUID(),
-      name,
-      description,
-      date,
-      is_in_the_diet: isInTheDiet,
-      user_id: userId,
-      created_at: new Date(Date.now()).toISOString(),
-    }
+  app.post(
+    '/',
+    {
+      preHandler: [checkUserIdExists],
+    },
+    async (request, reply) => {
+      const { name, description, date, isInTheDiet } = request.body
 
-    // TODO: drop tables and redo database schema
-    await knex.table('meals').insert(meal)
+      const { uid } = request.cookies
 
-    // TODO: return the created meal
-    reply.status(201).send(
-      responseWrapper({
-        data: {
-          meal,
-        },
-      }),
-    )
-  })
+      const meal = {
+        id: randomUUID(),
+        name,
+        description,
+        date,
+        is_in_the_diet: isInTheDiet,
+        user_id: uid,
+        created_at: new Date(Date.now()).toISOString(),
+      }
+
+      // TODO: drop tables and redo database schema
+      await knex.table('meals').insert(meal)
+
+      // TODO: return the created meal
+      reply.status(201).send(
+        responseWrapper({
+          data: {
+            meal,
+          },
+        }),
+      )
+    },
+  )
 }
 
 export default mealsRoutes
