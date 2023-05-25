@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto'
 import { knex } from '../database'
 import responseWrapper from '../utils/responseWrapper'
 import { encryptPassword, validatePassword } from '../utils/handlePassword'
+import { z } from 'zod'
+import validateZodSchema from '../utils/validateZodSchema'
 
 const usersRoutes = async (app, options, done) => {
   app.get('/', async (request, reply) => {
@@ -11,7 +13,24 @@ const usersRoutes = async (app, options, done) => {
   })
 
   app.post('/', async (request, reply) => {
-    const { name, email, password } = request.body
+    const createUserBodySchema = z.object({
+      name: z.string().min(3).max(255),
+      email: z.string().email(),
+      password: z.string().min(6).max(255),
+    })
+
+    const {
+      errors,
+      data: { name, email, password },
+    } = validateZodSchema(createUserBodySchema, request.body)
+
+    if (errors) {
+      return reply.status(400).send(
+        responseWrapper({
+          errors,
+        }),
+      )
+    }
 
     const emailAlreadyExists = await knex
       .table('users')
@@ -22,7 +41,11 @@ const usersRoutes = async (app, options, done) => {
     if (emailAlreadyExists) {
       return reply.status(409).send(
         responseWrapper({
-          error: 'Email already exists',
+          errors: [
+            {
+              message: 'Email already exists',
+            },
+          ],
         }),
       )
     }
@@ -50,7 +73,23 @@ const usersRoutes = async (app, options, done) => {
   })
 
   app.post('/login', async (request, reply) => {
-    const { email, password } = request.body
+    const loginBodySchema = z.object({
+      email: z.string().email(),
+      password: z.string().min(6).max(255),
+    })
+
+    const {
+      errors,
+      data: { email, password },
+    } = validateZodSchema(loginBodySchema, request.body)
+
+    if (errors) {
+      return reply.status(400).send(
+        responseWrapper({
+          errors,
+        }),
+      )
+    }
 
     const user = await knex.table('users').where({ email }).select('*').first()
 
@@ -73,7 +112,11 @@ const usersRoutes = async (app, options, done) => {
     // TODO: return the created meal
     reply.status(403).send(
       responseWrapper({
-        error: 'Invalid credentials',
+        errors: [
+          {
+            message: 'Invalid credentials',
+          },
+        ],
       }),
     )
   })

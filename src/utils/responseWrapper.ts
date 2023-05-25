@@ -1,6 +1,18 @@
-const responseWrapper = <D, E>({ data, error }: { data?: D; error?: E }) => ({
+type Errors = {
+  code?: string
+  message: string
+  path?: (string | number)[]
+}
+
+const responseWrapper = <D>({
   data,
-  error,
+  errors,
+}: {
+  data?: D
+  errors?: Errors[]
+}) => ({
+  data,
+  errors,
 })
 
 export default responseWrapper
