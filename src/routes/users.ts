@@ -13,6 +13,20 @@ const usersRoutes = async (app, options, done) => {
   app.post('/', async (request, reply) => {
     const { name, email, password } = request.body
 
+    const emailAlreadyExists = await knex
+      .table('users')
+      .where({ email })
+      .select('email')
+      .first()
+
+    if (emailAlreadyExists) {
+      return reply.status(409).send(
+        responseWrapper({
+          error: 'Email already exists',
+        }),
+      )
+    }
+
     const hashedPassword = await encryptPassword(password)
 
     const user = {
@@ -38,25 +52,19 @@ const usersRoutes = async (app, options, done) => {
   app.post('/login', async (request, reply) => {
     const { email, password } = request.body
 
-    const passwordIsValid = await validatePassword(password)
+    const user = await knex.table('users').where({ email }).select('*').first()
 
-    // TODO: validate why this is returning true to every passwords
-    console.log(
-      '🚀 ~ file: users.ts:42 ~ app.post ~ passwordIsValid:',
-      passwordIsValid,
-    )
+    const passwordIsValid = await validatePassword(password, user.password)
 
     if (passwordIsValid) {
-      const user = await knex
-        .table('users')
-        .where({ email })
-        .select('id')
-        .first()
-
       return reply.status(200).send(
         responseWrapper({
           data: {
-            user,
+            user: {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+            },
           },
         }),
       )

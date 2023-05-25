@@ -1,10 +1,11 @@
 import bcrypt from 'bcrypt'
 
-export const encryptPassword = async (password: string, salt = 5 as number) =>
-  await bcrypt.hash(password, salt)
+export const encryptPassword = async (plaintextPassword) => {
+  const hash = await bcrypt.hash(plaintextPassword, 10)
+  return hash
+}
 
-export const validatePassword = async (password: string) => {
-  const hash = bcrypt.hashSync(password, 5)
-
-  return await bcrypt.compareSync(password, hash)
+export const validatePassword = async (plaintextPassword, hash) => {
+  const result = await bcrypt.compare(plaintextPassword, hash)
+  return result
 }
