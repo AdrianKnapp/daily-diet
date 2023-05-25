@@ -43,7 +43,7 @@ const usersRoutes = async (app, options, done) => {
         responseWrapper({
           errors: [
             {
-              message: 'Email already exists',
+              message: 'Email already exists.',
             },
           ],
         }),
@@ -57,12 +57,16 @@ const usersRoutes = async (app, options, done) => {
       name,
       email,
       password: hashedPassword,
-      created_at: new Date().toISOString(),
+      created_at: new Date(Date.now()).toISOString(),
     }
 
     await knex.table('users').insert(user)
 
-    // TODO: return the created meal
+    reply.cookie('uid', user.id, {
+      path: '/',
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 1), // 1 day
+    })
+
     reply.status(201).send(
       responseWrapper({
         data: {
@@ -95,28 +99,58 @@ const usersRoutes = async (app, options, done) => {
 
     const passwordIsValid = await validatePassword(password, user.password)
 
-    if (passwordIsValid) {
-      return reply.status(200).send(
+    if (!passwordIsValid) {
+      reply.status(403).send(
         responseWrapper({
-          data: {
-            user: {
-              id: user.id,
-              name: user.name,
-              email: user.email,
+          errors: [
+            {
+              message: 'Invalid credentials.',
             },
-          },
+          ],
         }),
       )
     }
 
-    // TODO: return the created meal
-    reply.status(403).send(
+    if (request.cookies.uid) {
+      return reply.status(200).send(
+        responseWrapper({
+          errors: [
+            {
+              message: 'User already logged in.',
+            },
+          ],
+        }),
+      )
+    }
+
+    reply.cookie('uid', user.id, {
+      path: '/',
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 1), // 1 day
+    })
+
+    return reply.status(200).send(
       responseWrapper({
-        errors: [
-          {
-            message: 'Invalid credentials',
+        data: {
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
           },
-        ],
+        },
+      }),
+    )
+  })
+
+  app.post('/logout', async (request, reply) => {
+    reply.clearCookie('uid', {
+      path: '/',
+    })
+
+    reply.status(200).send(
+      responseWrapper({
+        data: {
+          message: 'User logged out.',
+        },
       }),
     )
   })

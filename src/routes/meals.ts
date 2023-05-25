@@ -19,7 +19,7 @@ const mealsRoutes = async (app, options, done) => {
       date,
       is_in_the_diet: isInTheDiet,
       user_id: userId,
-      created_at: new Date().toISOString(),
+      created_at: new Date(Date.now()).toISOString(),
     }
 
     // TODO: drop tables and redo database schema
