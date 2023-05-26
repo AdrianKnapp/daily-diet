@@ -4,6 +4,7 @@ import responseWrapper from '../utils/responseWrapper'
 import checkUserIdExists from '../middlewares/check-userid-exists'
 import { z } from 'zod'
 import validateZodSchema from '../utils/validateZodSchema'
+import getBestSequenceInDiet from '../utils/getBestSequenceInDiet'
 
 const mealsRoutes = async (app, options, done) => {
   app.get(
@@ -59,6 +60,39 @@ const mealsRoutes = async (app, options, done) => {
       }
 
       reply.send(responseWrapper({ data: { meal } }))
+    },
+  )
+
+  app.get(
+    '/resume',
+    {
+      preHandler: [checkUserIdExists],
+    },
+    async (request, reply) => {
+      const { uid } = request.cookies
+
+      const meals = await knex
+        .table('meals')
+        .where({ user_id: uid })
+        .select('*')
+
+      if (!meals) {
+        return reply.status(404).send(responseWrapper('Meal id not found'))
+      }
+
+      const mealsInDiet = meals.filter((meal) => meal.is_in_the_diet)?.length
+      const bestSequenceInDiet = getBestSequenceInDiet(meals)?.length
+
+      reply.send(
+        responseWrapper({
+          data: {
+            quantity: meals.length,
+            mealsInDiet,
+            mealsOutDiet: meals.length - mealsInDiet,
+            bestSequenceInDiet,
+          },
+        }),
+      )
     },
   )
 
