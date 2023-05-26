@@ -8,10 +8,10 @@
   - Description;
   - Date time;
   - It is in or out of diet;
-- [ ] Edit a meal, with the options above;
-- [ ] Delete a meal;
+- [X] Edit a meal, with the options above;
+- [X] Delete a meal;
 - [X] List every meal from a user;
-- [ ] View a unique meal;
+- [X] View a unique meal;
 - [ ] Get a resume of the user's diet, with the:
   - Quantity of all meals registered;
   - Quantify meals in the diet;

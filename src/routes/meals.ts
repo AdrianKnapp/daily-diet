@@ -21,6 +21,30 @@ const mealsRoutes = async (app, options, done) => {
     },
   )
 
+  app.get(
+    '/:id',
+    {
+      preHandler: [checkUserIdExists],
+    },
+    async (request, reply) => {
+      const { id } = request.params
+
+      const { uid } = request.cookies
+
+      const meal = await knex
+        .table('meals')
+        .where({ id, user_id: uid })
+        .select('*')
+        .first()
+
+      if (!meal) {
+        return reply.status(404).send(responseWrapper('Meal id not found'))
+      }
+
+      reply.send(responseWrapper({ data: { meal } }))
+    },
+  )
+
   app.post(
     '/',
     {
@@ -87,7 +111,6 @@ const mealsRoutes = async (app, options, done) => {
         .where({ id, user_id: uid })
         .first()
 
-      // TODO: return the created meal
       reply.status(201).send(
         responseWrapper({
           data: {
@@ -95,6 +118,29 @@ const mealsRoutes = async (app, options, done) => {
           },
         }),
       )
+    },
+  )
+
+  app.delete(
+    '/:id',
+    {
+      preHandler: [checkUserIdExists],
+    },
+    async (request, reply) => {
+      const { id } = request.params
+
+      const { uid } = request.cookies
+
+      const response = await knex.table('meals').delete().where({
+        id,
+        user_id: uid,
+      })
+
+      if (!response) {
+        return reply.status(404).send(responseWrapper('Meal id not found'))
+      }
+
+      reply.status(204).send()
     },
   )
 }
