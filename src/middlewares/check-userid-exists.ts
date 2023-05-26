@@ -8,15 +8,7 @@ const checkUserIdExists = async (
   const { uid } = request.cookies ?? {}
 
   if (!uid) {
-    reply.status(403).send(
-      responseWrapper({
-        errors: [
-          {
-            message: 'User not logged in.',
-          },
-        ],
-      }),
-    )
+    reply.status(403).send(responseWrapper('User not logged in.'))
   }
 }
 

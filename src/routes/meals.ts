@@ -41,14 +41,57 @@ const mealsRoutes = async (app, options, done) => {
         created_at: new Date(Date.now()).toISOString(),
       }
 
-      // TODO: drop tables and redo database schema
       await knex.table('meals').insert(meal)
+
+      reply.status(201).send(
+        responseWrapper({
+          data: {
+            meal,
+          },
+        }),
+      )
+    },
+  )
+
+  app.patch(
+    '/:id',
+    {
+      preHandler: [checkUserIdExists],
+    },
+    async (request, reply) => {
+      const { id } = request.params
+      const { name, description, date, isInTheDiet } = request.body
+
+      const { uid } = request.cookies
+
+      const meal = {
+        id,
+        name,
+        description,
+        date,
+        is_in_the_diet: isInTheDiet,
+      }
+
+      const response = await knex.table('meals').update(meal).where({
+        id,
+        user_id: uid,
+      })
+
+      if (!response) {
+        return reply.status(404).send(responseWrapper('Meal id not found'))
+      }
+
+      const mealUpdated = await knex
+        .select('*')
+        .from('meals')
+        .where({ id, user_id: uid })
+        .first()
 
       // TODO: return the created meal
       reply.status(201).send(
         responseWrapper({
           data: {
-            meal,
+            mealUpdated,
           },
         }),
       )

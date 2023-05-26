@@ -39,15 +39,7 @@ const usersRoutes = async (app, options, done) => {
       .first()
 
     if (emailAlreadyExists) {
-      return reply.status(409).send(
-        responseWrapper({
-          errors: [
-            {
-              message: 'Email already exists.',
-            },
-          ],
-        }),
-      )
+      return reply.status(409).send(responseWrapper('Email already exists.'))
     }
 
     const hashedPassword = await encryptPassword(password)
@@ -100,27 +92,11 @@ const usersRoutes = async (app, options, done) => {
     const passwordIsValid = await validatePassword(password, user.password)
 
     if (!passwordIsValid) {
-      reply.status(403).send(
-        responseWrapper({
-          errors: [
-            {
-              message: 'Invalid credentials.',
-            },
-          ],
-        }),
-      )
+      reply.status(403).send(responseWrapper('Invalid credentials.'))
     }
 
     if (request.cookies.uid) {
-      return reply.status(200).send(
-        responseWrapper({
-          errors: [
-            {
-              message: 'User already logged in.',
-            },
-          ],
-        }),
-      )
+      return reply.status(200).send(responseWrapper('User already logged in.'))
     }
 
     reply.cookie('uid', user.id, {
