@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto'
 import { knex } from '../database'
 import responseWrapper from '../utils/responseWrapper'
 import checkUserIdExists from '../middlewares/check-userid-exists'
+import { z } from 'zod'
+import validateZodSchema from '../utils/validateZodSchema'
 
 const mealsRoutes = async (app, options, done) => {
   app.get(
@@ -27,7 +29,22 @@ const mealsRoutes = async (app, options, done) => {
       preHandler: [checkUserIdExists],
     },
     async (request, reply) => {
-      const { id } = request.params
+      const getMealByIdParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
+
+      const {
+        errors,
+        data: { id },
+      } = validateZodSchema(getMealByIdParamsSchema, request.params)
+
+      if (errors) {
+        return reply.status(400).send(
+          responseWrapper({
+            errors,
+          }),
+        )
+      }
 
       const { uid } = request.cookies
 
@@ -51,7 +68,25 @@ const mealsRoutes = async (app, options, done) => {
       preHandler: [checkUserIdExists],
     },
     async (request, reply) => {
-      const { name, description, date, isInTheDiet } = request.body
+      const createMealBodySchema = z.object({
+        name: z.string().min(0).max(255),
+        description: z.string().min(0).max(255),
+        date: z.string().min(0).max(255),
+        isInTheDiet: z.boolean(),
+      })
+
+      const {
+        errors,
+        data: { name, description, date, isInTheDiet },
+      } = validateZodSchema(createMealBodySchema, request.body)
+
+      if (errors) {
+        return reply.status(400).send(
+          responseWrapper({
+            errors,
+          }),
+        )
+      }
 
       const { uid } = request.cookies
 
@@ -83,8 +118,42 @@ const mealsRoutes = async (app, options, done) => {
       preHandler: [checkUserIdExists],
     },
     async (request, reply) => {
-      const { id } = request.params
-      const { name, description, date, isInTheDiet } = request.body
+      const editMealParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
+
+      const {
+        errors: paramErrors,
+        data: { id },
+      } = validateZodSchema(editMealParamsSchema, request.params)
+
+      if (paramErrors) {
+        return reply.status(400).send(
+          responseWrapper({
+            errors: paramErrors,
+          }),
+        )
+      }
+
+      const editMealBodySchema = z.object({
+        name: z.string().min(0).max(255),
+        description: z.string().min(0).max(255),
+        date: z.string().min(0).max(255),
+        isInTheDiet: z.boolean(),
+      })
+
+      const {
+        errors,
+        data: { name, description, date, isInTheDiet },
+      } = validateZodSchema(editMealBodySchema, request.body)
+
+      if (errors) {
+        return reply.status(400).send(
+          responseWrapper({
+            errors,
+          }),
+        )
+      }
 
       const { uid } = request.cookies
 
@@ -127,8 +196,22 @@ const mealsRoutes = async (app, options, done) => {
       preHandler: [checkUserIdExists],
     },
     async (request, reply) => {
-      const { id } = request.params
+      const deleteMealParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
 
+      const {
+        errors,
+        data: { id },
+      } = validateZodSchema(deleteMealParamsSchema, request.params)
+
+      if (errors) {
+        return reply.status(400).send(
+          responseWrapper({
+            errors,
+          }),
+        )
+      }
       const { uid } = request.cookies
 
       const response = await knex.table('meals').delete().where({
