@@ -7,9 +7,44 @@ import validateZodSchema from '../utils/validateZodSchema'
 
 const usersRoutes = async (app, options, done) => {
   app.get('/', async (request, reply) => {
-    const users = await knex.table('users').select('*')
+    const users = await knex
+      .table('users')
+      .select('id')
+      .select('email')
+      .select('name')
+      .select('created_at')
 
     reply.send(responseWrapper({ data: { users } }))
+  })
+
+  app.get('/:id', async (request, reply) => {
+    const getUserByIdParamsSchema = z.object({
+      id: z.string().uuid(),
+    })
+
+    const {
+      errors,
+      data: { id },
+    } = validateZodSchema(getUserByIdParamsSchema, request.params)
+
+    if (errors) {
+      return reply.status(400).send(
+        responseWrapper({
+          errors,
+        }),
+      )
+    }
+
+    const user = await knex
+      .table('users')
+      .select('id')
+      .select('email')
+      .select('name')
+      .select('created_at')
+      .where({ id })
+      .first()
+
+    reply.send(responseWrapper({ data: { user } }))
   })
 
   app.post('/', async (request, reply) => {
