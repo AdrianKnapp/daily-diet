@@ -47,4 +47,22 @@ describe('meals routes', () => {
 
     expect(response.statusCode).toBe(201)
   })
+
+  it('should be able to list all meals', async () => {
+    const cookies = await login()
+
+    await createMeal(cookies)
+
+    const listMealsResponse = await request(app.server)
+      .get('/meals')
+      .set('Cookie', cookies)
+      .expect(200)
+
+    expect(listMealsResponse.body.data.meals).toEqual([
+      expect.objectContaining({
+        name: lunchMock.name,
+        description: lunchMock.description,
+      }),
+    ])
+  })
 })
