@@ -114,4 +114,28 @@ describe('meals routes', () => {
       }),
     )
   })
+
+  it('should be able to delete a meal', async () => {
+    const cookies = await login()
+
+    const responseCreateMeal = await createMeal(cookies)
+
+    const responseGetMealById = await request(app.server)
+      .get(`/meals/${responseCreateMeal.body.data.meal.id}`)
+      .set('Cookie', cookies)
+      .expect(200)
+
+    expect(responseGetMealById.body.data.meal).toEqual(
+      expect.objectContaining({
+        name: lunchMock.name,
+        description: lunchMock.description,
+      }),
+    )
+
+    const responseDeleteMeal = await request(app.server)
+      .delete(`/meals/${responseCreateMeal.body.data.meal.id}`)
+      .set('Cookie', cookies)
+
+    expect(responseDeleteMeal.statusCode).toBe(204)
+  })
 })
