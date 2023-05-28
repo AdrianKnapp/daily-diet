@@ -83,4 +83,35 @@ describe('meals routes', () => {
       }),
     )
   })
+
+  it('should be able to edit a meal', async () => {
+    const cookies = await login()
+
+    const responseCreateMeal = await createMeal(cookies)
+
+    const responseGetMealById = await request(app.server)
+      .get(`/meals/${responseCreateMeal.body.data.meal.id}`)
+      .set('Cookie', cookies)
+      .expect(200)
+
+    expect(responseGetMealById.body.data.meal).toEqual(
+      expect.objectContaining({
+        name: lunchMock.name,
+        description: lunchMock.description,
+      }),
+    )
+
+    const responseEditMeal = await request(app.server)
+      .patch(`/meals/${responseCreateMeal.body.data.meal.id}`)
+      .set('Cookie', cookies)
+      .send({
+        name: 'Dinner',
+      })
+
+    expect(responseEditMeal.body.data.meal).toEqual(
+      expect.objectContaining({
+        name: 'Dinner',
+      }),
+    )
+  })
 })
