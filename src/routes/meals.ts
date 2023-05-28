@@ -170,10 +170,10 @@ const mealsRoutes = async (app, options, done) => {
       }
 
       const editMealBodySchema = z.object({
-        name: z.string().min(0).max(255),
-        description: z.string().min(0).max(255),
-        date: z.string().min(0).max(255),
-        isInTheDiet: z.boolean(),
+        name: z.string().min(0).max(255).optional(),
+        description: z.string().min(0).max(255).optional(),
+        date: z.string().min(0).max(255).optional(),
+        isInTheDiet: z.boolean().optional(),
       })
 
       const {
@@ -217,7 +217,7 @@ const mealsRoutes = async (app, options, done) => {
       reply.status(201).send(
         responseWrapper({
           data: {
-            mealUpdated,
+            meal: mealUpdated,
           },
         }),
       )
