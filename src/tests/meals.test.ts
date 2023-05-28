@@ -138,4 +138,26 @@ describe('meals routes', () => {
 
     expect(responseDeleteMeal.statusCode).toBe(204)
   })
+
+  it('should be able to get resume', async () => {
+    const cookies = await login()
+
+    const responseCreateMeal = await createMeal(cookies)
+
+    expect(responseCreateMeal.statusCode).toBe(201)
+
+    const responseGetResume = await request(app.server)
+      .get('/meals/resume')
+      .set('Cookie', cookies)
+      .expect(200)
+
+    expect(responseGetResume.body.data).toEqual(
+      expect.objectContaining({
+        bestSequenceInDiet: 1,
+        mealsInDiet: 1,
+        mealsOutDiet: 0,
+        quantity: 1,
+      }),
+    )
+  })
 })
